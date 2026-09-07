@@ -214,7 +214,7 @@ class FailoverOrchestrationTests(unittest.TestCase):
         slot_state.write_slot_states(str(manager.DATA_DIR), {
             "A": {"node_id": "node-a", "device": "tun0", "exit_ip": "198.51.100.1",
                   "asn": "", "verified_at": 1.0, "health": "ok"},
-            "B": {"node_id": "node-b", "device": "tun1", "exit_ip": "198.51.100.2",
+            "B": {"node_id": "node-b", "device": "tun2", "exit_ip": "198.51.100.2",
                   "asn": "", "verified_at": 1.0, "health": "ok"},
         })
 

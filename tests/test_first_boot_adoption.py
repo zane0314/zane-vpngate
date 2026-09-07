@@ -175,7 +175,7 @@ class FirstBootAdoptionTests(unittest.TestCase):
         manager.SLOT_RUNTIME["A"]["node_id"] = "node-a"
 
         node = sample_node("node-b")
-        egress = {"ok": True, "exit_ip": "198.51.100.2", "ttfb_ms": 40, "slot": "B", "device": "tun1"}
+        egress = {"ok": True, "exit_ip": "198.51.100.2", "ttfb_ms": 40, "slot": "B", "device": "tun2"}
         result = self._run_connect(node, egress, "B")
         self.assertEqual(f"Connected {node['id']}", result)
 
@@ -191,7 +191,7 @@ class FirstBootAdoptionTests(unittest.TestCase):
     def test_connect_adopts_when_pointed_slot_unhealthy(self):
         slot_state.write_active_slot(str(manager.DATA_DIR), "A", "node-a")
         node = sample_node("node-b")
-        egress = {"ok": True, "exit_ip": "198.51.100.2", "ttfb_ms": 40, "slot": "B", "device": "tun1"}
+        egress = {"ok": True, "exit_ip": "198.51.100.2", "ttfb_ms": 40, "slot": "B", "device": "tun2"}
         # 第一次探针 = 指针槽 A 健康复核（失败）；第二次 = promote B 前置探针（成功）
         self._run_connect(node, egress, "B", probe_side_effect=[failed_probe("A"), ok_probe("B")])
 

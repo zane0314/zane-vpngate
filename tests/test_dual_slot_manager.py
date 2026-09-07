@@ -89,16 +89,16 @@ class DualSlotManagerTests(unittest.TestCase):
 
     def test_setup_policy_routing_uses_given_table(self):
         with mock.patch.object(manager.subprocess, "run") as run:
-            manager.setup_policy_routing("tun1", 101)
+            manager.setup_policy_routing("tun2", 101)
         commands = [call.args[0] for call in run.call_args_list]
-        self.assertIn(["ip", "route", "add", "default", "dev", "tun1", "table", "101"], commands)
-        self.assertIn(["ip", "rule", "add", "oif", "tun1", "table", "101"], commands)
+        self.assertIn(["ip", "route", "add", "default", "dev", "tun2", "table", "101"], commands)
+        self.assertIn(["ip", "rule", "add", "oif", "tun2", "table", "101"], commands)
         for command in commands:
             self.assertNotIn("100", [str(part) for part in command])
 
     def test_cleanup_policy_routing_uses_given_table(self):
         with mock.patch.object(manager.subprocess, "run") as run:
-            manager.cleanup_policy_routing("tun1", 101)
+            manager.cleanup_policy_routing("tun2", 101)
         commands = [call.args[0] for call in run.call_args_list]
         self.assertIn(["ip", "rule", "del", "table", "101"], commands)
         self.assertIn(["ip", "route", "flush", "table", "101"], commands)
@@ -145,16 +145,16 @@ class DualSlotManagerTests(unittest.TestCase):
 
     def test_connect_node_slot_b_full_flow(self):
         node = sample_node()
-        egress = {"ok": True, "exit_ip": "198.51.100.7", "ttfb_ms": 33, "slot": "B", "device": "tun1"}
+        egress = {"ok": True, "exit_ip": "198.51.100.7", "ttfb_ms": 33, "slot": "B", "device": "tun2"}
         result, spawned, patches = self._start_connect(node, egress, "B")
 
         self.assertEqual(f"Connected {node['id']}", result)
         self.assertEqual(1, len(spawned))
         command = spawned[0][0]
         dev_index = command.index("--dev")
-        self.assertEqual("tun1", command[dev_index + 1])
+        self.assertEqual("tun2", command[dev_index + 1])
 
-        manager.setup_policy_routing.assert_called_once_with("tun1", 101)
+        manager.setup_policy_routing.assert_called_once_with("tun2", 101)
         manager.verify_slot_egress.assert_called_once_with("B")
 
         self.assertEqual(spawned[0][1], manager.SLOT_RUNTIME["B"]["process"])
@@ -170,14 +170,14 @@ class DualSlotManagerTests(unittest.TestCase):
         states = slot_state.read_slot_states(str(manager.DATA_DIR))
         self.assertIn("B", states)
         self.assertEqual(node["id"], states["B"]["node_id"])
-        self.assertEqual("tun1", states["B"]["device"])
+        self.assertEqual("tun2", states["B"]["device"])
         self.assertEqual("198.51.100.7", states["B"]["exit_ip"])
         self.assertEqual("ok", states["B"]["health"])
         self.assertGreater(states["B"]["verified_at"], 0)
 
     def test_connect_node_verification_failure_keeps_fail_closed(self):
         node = sample_node("node-fail")
-        egress = {"ok": False, "error": "出口与默认公网相同", "slot": "B", "device": "tun1"}
+        egress = {"ok": False, "error": "出口与默认公网相同", "slot": "B", "device": "tun2"}
         with self.assertRaises(RuntimeError):
             self._start_connect(node, egress, "B")
 
@@ -240,8 +240,8 @@ class DualSlotManagerTests(unittest.TestCase):
             result = manager.verify_slot_egress("B")
         self.assertTrue(result["ok"])
         self.assertEqual("198.51.100.9", result["exit_ip"])
-        self.assertEqual("tun1", result["device"])
-        self.assertEqual("tun1", probe.call_args.args[0])
+        self.assertEqual("tun2", result["device"])
+        self.assertEqual("tun2", probe.call_args.args[0])
         self.assertEqual(0, probe.call_args.kwargs.get("upload_bytes"))
         self.assertEqual(1, probe.call_args.kwargs.get("samples"))
         self.assertLessEqual(probe.call_args.kwargs.get("download_bytes"), 1_000_000)

@@ -50,7 +50,7 @@ class DualSlotStatusTests(unittest.TestCase):
         self.assertIsNone(state["last_failover_reason"])
         slots = state["slots"]
         self.assertEqual({"A", "B"}, set(slots))
-        for slot_name, device in (("A", "tun0"), ("B", "tun1")):
+        for slot_name, device in (("A", "tun0"), ("B", "tun2")):
             info = slots[slot_name]
             for key in ("node_id", "device", "exit_ip", "verified_at", "health"):
                 self.assertIn(key, info, f"slots.{slot_name} 缺少 {key}")

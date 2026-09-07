@@ -51,10 +51,10 @@ class ResolveActiveDeviceTests(unittest.TestCase):
         with mock.patch.object(proxy_server.os.path, "isdir", return_value=True):
             self.assertEqual("tun0", proxy_server.resolve_active_device(self.data_dir))
 
-    def test_pointer_to_slot_b_returns_tun1(self):
+    def test_pointer_to_slot_b_returns_tun2(self):
         slot_state.write_active_slot(self.data_dir, "B", "node-2")
         with mock.patch.object(proxy_server.os.path, "isdir", return_value=True):
-            self.assertEqual("tun1", proxy_server.resolve_active_device(self.data_dir))
+            self.assertEqual("tun2", proxy_server.resolve_active_device(self.data_dir))
 
     def test_no_pointer_raises_3004(self):
         with self.assertRaisesRegex(OSError, "3004"):
@@ -121,7 +121,7 @@ class CreateConnectionDeviceBindingTests(unittest.TestCase):
         self.addCleanup(self.tmp.cleanup)
         self.data_dir = self.tmp.name
 
-    def test_binds_pointer_device_tun1(self):
+    def test_binds_pointer_device_tun2(self):
         slot_state.write_active_slot(self.data_dir, "B", "node-2")
         fake_tcp = mock.Mock()
         address = (socket.AF_INET, socket.SOCK_STREAM, 6, "", ("203.0.113.10", 443))
@@ -133,7 +133,7 @@ class CreateConnectionDeviceBindingTests(unittest.TestCase):
         ):
             conn = proxy_server.create_connection(("203.0.113.10", 443))
         self.assertIs(conn, fake_tcp)
-        fake_tcp.setsockopt.assert_any_call(socket.SOL_SOCKET, socket.SO_BINDTODEVICE, b"tun1")
+        fake_tcp.setsockopt.assert_any_call(socket.SOL_SOCKET, socket.SO_BINDTODEVICE, b"tun2")
         fake_tcp.connect.assert_called_once_with(("203.0.113.10", 443))
 
     def test_dns_and_tcp_sockets_use_same_device(self):
@@ -158,12 +158,12 @@ class CreateConnectionDeviceBindingTests(unittest.TestCase):
         ):
             proxy_server.create_connection(("example.com", 443))
 
-        fake_udp.setsockopt.assert_any_call(socket.SOL_SOCKET, socket.SO_BINDTODEVICE, b"tun1")
-        fake_tcp.setsockopt.assert_any_call(socket.SOL_SOCKET, socket.SO_BINDTODEVICE, b"tun1")
+        fake_udp.setsockopt.assert_any_call(socket.SOL_SOCKET, socket.SO_BINDTODEVICE, b"tun2")
+        fake_tcp.setsockopt.assert_any_call(socket.SOL_SOCKET, socket.SO_BINDTODEVICE, b"tun2")
         for sock in sockets:
             for call in sock.setsockopt.call_args_list:
                 if call.args[:2] == (socket.SOL_SOCKET, socket.SO_BINDTODEVICE):
-                    self.assertEqual(b"tun1", call.args[2])
+                    self.assertEqual(b"tun2", call.args[2])
 
     def test_explicit_device_bypasses_pointer(self):
         # 无指针时显式 device 仍可工作（供探针/测试绕过）
@@ -195,7 +195,7 @@ class CreateConnectionDeviceBindingTests(unittest.TestCase):
             c for c in fake_tcp.setsockopt.call_args_list
             if c.args[:2] == (socket.SOL_SOCKET, socket.SO_BINDTODEVICE)
         ]
-        self.assertEqual([b"tun0", b"tun1"], [c.args[2] for c in bind_calls])
+        self.assertEqual([b"tun0", b"tun2"], [c.args[2] for c in bind_calls])
 
 
 class CompatWrapperTests(unittest.TestCase):
@@ -219,19 +219,19 @@ class CompatWrapperTests(unittest.TestCase):
     def test_dns_query_over_tun0_still_callable_with_device(self):
         fake_udp = _make_fake_udp_socket()
         with mock.patch.object(proxy_server.socket, "socket", return_value=fake_udp):
-            result = proxy_server.dns_query_over_tun0("example.com", 1, "8.8.8.8", 5, device="tun1")
+            result = proxy_server.dns_query_over_tun0("example.com", 1, "8.8.8.8", 5, device="tun2")
         self.assertEqual("203.0.113.10", result)
-        fake_udp.setsockopt.assert_any_call(socket.SOL_SOCKET, socket.SO_BINDTODEVICE, b"tun1")
+        fake_udp.setsockopt.assert_any_call(socket.SOL_SOCKET, socket.SO_BINDTODEVICE, b"tun2")
 
     def test_resolve_dns_over_tun_with_qtype(self):
         fake_udp = _make_fake_udp_socket()
         with mock.patch.object(proxy_server.socket, "socket", return_value=fake_udp):
-            result = proxy_server.resolve_dns_over_tun("example.com", qtype="A", device="tun1")
+            result = proxy_server.resolve_dns_over_tun("example.com", qtype="A", device="tun2")
         self.assertEqual("203.0.113.10", result)
 
     def test_resolve_dns_over_tun_passthrough_literal_ip(self):
         with mock.patch.object(proxy_server.socket, "socket") as socket_ctor:
-            self.assertEqual("203.0.113.10", proxy_server.resolve_dns_over_tun("203.0.113.10", device="tun1"))
+            self.assertEqual("203.0.113.10", proxy_server.resolve_dns_over_tun("203.0.113.10", device="tun2"))
         socket_ctor.assert_not_called()
 
 

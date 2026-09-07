@@ -117,7 +117,7 @@ class ProbeVpngateSlotTests(unittest.TestCase):
         self.assertIn("no route", result["detail"])
 
     def test_egress_probe_bound_to_slot_device(self):
-        self._make_device("tun1")
+        self._make_device("tun2")
         egress = mock.Mock(return_value={"ok": True, "exit_ip": "203.0.113.9"})
         result = health_probes.probe_vpngate_slot(
             "B", self.data_dir,
@@ -127,7 +127,7 @@ class ProbeVpngateSlotTests(unittest.TestCase):
             baseline_ip="198.51.100.1",
         )
         self.assertTrue(result["ok"])
-        egress.assert_called_once_with("tun1")
+        egress.assert_called_once_with("tun2")
 
     def test_default_process_check_without_pidfile(self):
         self._make_device()

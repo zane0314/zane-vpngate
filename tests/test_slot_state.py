@@ -10,7 +10,7 @@ import slot_state
 
 class SlotConstantsTest(unittest.TestCase):
     def test_slot_devices_exactly_two_slots(self):
-        self.assertEqual(slot_state.SLOT_DEVICES, {"A": "tun0", "B": "tun1"})
+        self.assertEqual(slot_state.SLOT_DEVICES, {"A": "tun0", "B": "tun2"})
 
     def test_slot_tables_exactly_two_slots(self):
         self.assertEqual(slot_state.SLOT_TABLES, {"A": 100, "B": 101})
@@ -28,14 +28,14 @@ class SlotConstantsTest(unittest.TestCase):
 class DeviceSlotMappingTest(unittest.TestCase):
     def test_device_for_slot(self):
         self.assertEqual(slot_state.device_for_slot("A"), "tun0")
-        self.assertEqual(slot_state.device_for_slot("B"), "tun1")
+        self.assertEqual(slot_state.device_for_slot("B"), "tun2")
 
     def test_slot_for_device(self):
         self.assertEqual(slot_state.slot_for_device("tun0"), "A")
-        self.assertEqual(slot_state.slot_for_device("tun1"), "B")
+        self.assertEqual(slot_state.slot_for_device("tun2"), "B")
 
     def test_slot_for_device_unknown_returns_none(self):
-        self.assertIsNone(slot_state.slot_for_device("tun2"))
+        self.assertIsNone(slot_state.slot_for_device("tun1"))
         self.assertIsNone(slot_state.slot_for_device("eth0"))
 
 
@@ -64,7 +64,7 @@ class ActiveSlotTest(unittest.TestCase):
         slot_state.write_active_slot(self.data_dir, "B", "node-456")
         result = slot_state.read_active_slot(self.data_dir)
         self.assertEqual(result["slot"], "B")
-        self.assertEqual(result["device"], "tun1")
+        self.assertEqual(result["device"], "tun2")
         self.assertEqual(result["node_id"], "node-456")
 
     def test_corrupt_json_returns_none(self):
@@ -79,9 +79,9 @@ class ActiveSlotTest(unittest.TestCase):
         self.assertIsNone(slot_state.read_active_slot(self.data_dir))
 
     def test_device_slot_mismatch_returns_none(self):
-        # slot=A 但 device 写成 tun1，与 SLOT_DEVICES["A"]=tun0 不一致
+        # slot=A 但 device 写成 tun2，与 SLOT_DEVICES["A"]=tun0 不一致
         with open(os.path.join(self.data_dir, "active_slot.json"), "w") as fh:
-            json.dump({"slot": "A", "node_id": "x", "device": "tun1",
+            json.dump({"slot": "A", "node_id": "x", "device": "tun2",
                        "updated_at": 1.0}, fh)
         self.assertIsNone(slot_state.read_active_slot(self.data_dir))
 
@@ -133,7 +133,7 @@ class SlotStatesTest(unittest.TestCase):
             "A": {"node_id": "node-1", "device": "tun0",
                   "exit_ip": "1.2.3.4", "asn": 12345,
                   "verified_at": 1700000000.0, "health": "ok"},
-            "B": {"node_id": None, "device": "tun1", "exit_ip": None,
+            "B": {"node_id": None, "device": "tun2", "exit_ip": None,
                   "asn": None, "verified_at": None, "health": "empty"},
         }
         slot_state.write_slot_states(self.data_dir, states)

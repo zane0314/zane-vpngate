@@ -1,6 +1,6 @@
 """standby 槽隧道自动维护测试（云途 Task 9 Step 1 实测缺口）。
 
-缺口：部署后 standby 槽（tun1）永不建隧道——schedule_standby_replenish 在
+缺口：部署后 standby 槽（tun2）永不建隧道——schedule_standby_replenish 在
 consumer 模式首行 return，且即使非 consumer 也只补节点池不 connect 槽位；
 connect_node 默认 slot="A"，仅 failover/boot 恢复才碰 B 槽。
 
@@ -180,7 +180,7 @@ class StandbySlotMaintenanceTests(unittest.TestCase):
             manager.SLOT_RUNTIME[slot]["draining_since"] = None
             states = slot_state.read_slot_states(str(manager.DATA_DIR))
             states[slot] = {
-                "node_id": node_id, "device": "tun1", "exit_ip": "198.51.100.2",
+                "node_id": node_id, "device": "tun2", "exit_ip": "198.51.100.2",
                 "asn": "", "verified_at": time.time(), "health": "ok",
             }
             slot_state.write_slot_states(str(manager.DATA_DIR), states)

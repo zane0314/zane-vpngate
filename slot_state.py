@@ -5,7 +5,8 @@ import os
 import tempfile
 import time
 
-SLOT_DEVICES = {"A": "tun0", "B": "tun1"}
+# B 槽用 tun2：tun1 预留给 x-ui 内置 VPNGate 缓存隧道（该隧道常驻且不可配置设备名）
+SLOT_DEVICES = {"A": "tun0", "B": "tun2"}
 SLOT_TABLES = {"A": 100, "B": 101}
 
 _ACTIVE_SLOT_FILENAME = "active_slot.json"
