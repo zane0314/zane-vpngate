@@ -1,0 +1,10 @@
+[Unit]
+Description=Pull AimiliVPN pool snapshot hourly
+
+[Timer]
+OnCalendar=*-*-* *:00:00 Asia/Shanghai
+Persistent=true
+Unit=aimilivpn-pool-sync.service
+
+[Install]
+WantedBy=timers.target

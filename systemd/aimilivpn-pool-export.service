@@ -1,0 +1,18 @@
+[Unit]
+Description=Export authoritative AimiliVPN pool snapshot
+After=aimilivpn.service
+
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/aimilivpn
+ExecStart=/usr/bin/python3 /opt/aimilivpn/scripts/export_pool_snapshot.py --source-instance tokyo
+ExecStartPost=/bin/chown root:aimili-sync /var/lib/aimilivpn-export/pool-snapshot.json
+ExecStartPost=/bin/chmod 0640 /var/lib/aimilivpn-export/pool-snapshot.json
+User=root
+Group=root
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/aimilivpn-export
