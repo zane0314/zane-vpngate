@@ -1,0 +1,10 @@
+/opt/aimilivpn/vpngate_data/vpngate.log {
+    daily
+    size 10M
+    rotate 7
+    compress
+    delaycompress
+    missingok
+    notifempty
+    copytruncate
+}

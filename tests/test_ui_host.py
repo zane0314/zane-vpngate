@@ -82,11 +82,31 @@ def run_manager_snippet(snippet: str, extra_env: dict) -> str:
 
 
 class UIHostTests(unittest.TestCase):
-    def test_default_ui_host_matches_existing_bind(self):
+    def test_default_ui_host_is_loopback(self):
         out = run_manager_snippet(
             "import vpngate_manager as m; print(m.UI_HOST)", {}
         )
-        self.assertEqual("::", out.strip().splitlines()[-1])
+        self.assertEqual("127.0.0.1", out.strip().splitlines()[-1])
+
+    def test_existing_wildcard_ui_host_migrates_to_loopback(self):
+        out = run_manager_snippet(
+            textwrap.dedent(
+                """
+                import json
+                import os
+                from pathlib import Path
+
+                data_dir = Path(os.environ["VPNGATE_DATA_DIR"])
+                (data_dir / "ui_auth.json").write_text(
+                    json.dumps({"host": "::", "port": 8787}), encoding="utf-8"
+                )
+                import vpngate_manager as manager
+                print(manager.load_ui_config()["host"])
+                """
+            ),
+            {},
+        )
+        self.assertEqual("127.0.0.1", out.strip().splitlines()[-1])
 
     def test_env_ui_host_is_passed_to_server_bind(self):
         out = run_manager_snippet(_MAIN_BIND_SNIPPET, {"UI_HOST": "127.0.0.1"})

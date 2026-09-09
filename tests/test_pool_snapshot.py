@@ -212,6 +212,29 @@ class PoolSnapshotTests(unittest.TestCase):
             self.assertEqual(2, json.loads(current.read_text(encoding="utf-8"))["schema_version"])
             self.assertEqual(1, json.loads(previous.read_text(encoding="utf-8"))["schema_version"])
 
+    def test_apply_replaces_expired_current_snapshot_when_incoming_is_newer(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = root / "download.json"
+            current = root / "upstream-snapshot.json"
+            previous = root / "upstream-snapshot.previous.json"
+            expired = snapshot(sequence=2, generated_at=NOW - 172801)
+            current.write_text(json.dumps(expired), encoding="utf-8")
+            source.write_text(json.dumps(snapshot(sequence=3)), encoding="utf-8")
+
+            applied = pool_snapshot.apply_snapshot_file(
+                source,
+                current,
+                previous,
+                max_bytes=1024 * 1024,
+                now=NOW,
+                max_age_seconds=172800,
+                max_nodes=300,
+            )
+
+            self.assertEqual(3, applied["sequence"])
+            self.assertEqual(2, json.loads(previous.read_text(encoding="utf-8"))["sequence"])
+
     def test_load_rejects_oversized_file(self):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "large.json"

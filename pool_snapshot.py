@@ -337,25 +337,23 @@ def apply_snapshot_file(
     )
     current_bytes: bytes | None = None
     if current.exists():
+        if current.stat().st_size > int(max_bytes):
+            raise SnapshotValidationError("snapshot file size exceeds limit")
         current_bytes = current.read_bytes()
         try:
-            current_snapshot = load_snapshot_file(
-                current,
-                max_bytes=max_bytes,
-                now=now,
-                max_age_seconds=max_age_seconds,
-                max_nodes=max_nodes,
-            )
-        except SnapshotValidationError:
-            try:
-                legacy = json.loads(current_bytes.decode("utf-8"))
-            except (UnicodeDecodeError, json.JSONDecodeError) as exc:
-                raise SnapshotValidationError("current snapshot is invalid") from exc
-            if not isinstance(legacy, dict) or legacy.get("schema_version") != 1:
-                raise
-        else:
-            if incoming["sequence"] <= current_snapshot["sequence"]:
+            current_snapshot = json.loads(current_bytes.decode("utf-8"))
+        except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+            raise SnapshotValidationError("current snapshot is invalid") from exc
+        if not isinstance(current_snapshot, dict):
+            raise SnapshotValidationError("current snapshot is invalid")
+        if current_snapshot.get("schema_version") == SCHEMA_VERSION:
+            current_sequence = current_snapshot.get("sequence")
+            if isinstance(current_sequence, bool) or not isinstance(current_sequence, int) or current_sequence < 1:
+                raise SnapshotValidationError("current snapshot sequence is invalid")
+            if incoming["sequence"] <= current_sequence:
                 raise SnapshotValidationError("sequence must increase")
+        elif current_snapshot.get("schema_version") != 1:
+            raise SnapshotValidationError("current snapshot schema is invalid")
 
     incoming_bytes = json.dumps(
         incoming, ensure_ascii=False, indent=2, sort_keys=True

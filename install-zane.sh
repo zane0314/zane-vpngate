@@ -97,6 +97,7 @@ if [ -f "$AIMILI_ENV_FILE" ]; then
     info "已备份原环境配置到 $backup。"
 fi
 install -m 0600 "$profile" "$AIMILI_ENV_FILE"
+install -m 0644 "$AIMILI_INSTALL_DIR/systemd/aimilivpn.logrotate" /etc/logrotate.d/aimilivpn
 
 info "调用项目原生安装管线。"
 repo_path="${AIMILI_REPO#https://github.com/}"

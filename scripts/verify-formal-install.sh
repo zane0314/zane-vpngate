@@ -31,12 +31,13 @@ check_file "$INSTALL_DIR/node_pool.py"
 check_file "$INSTALL_DIR/scripts/full_path_speedtest.py"
 check_file "$INSTALL_DIR/vpngate_data/ui_auth.json"
 check_file "$ENV_FILE"
+check_file /etc/logrotate.d/aimilivpn
 
 check_env STRICT_RESIDENTIAL_ONLY true
 check_env TRUSTED_POOL_LIMIT 10
 check_env OBSERVATION_POOL_LIMIT 10
 check_env TRUST_MIN_SUCCESSES 1
-check_env HARD_GATE_TTL_SECONDS 7200
+check_env HARD_GATE_TTL_SECONDS 108000
 check_env STANDBY_TARGET 10
 check_env STANDBY_MAX_AGE_SECONDS 691200
 if [ "$AIMILI_PROFILE" = "upstream-consumer" ]; then
@@ -63,6 +64,7 @@ check_env QUALITY_TIE_WINDOW 5
 check_env SPEED_SWITCH_GAIN_PERCENT 30
 check_env SWITCH_REQUIRED_WINS 2
 check_env LOCAL_PROXY_HOST 127.0.0.1
+check_env UI_HOST 127.0.0.1
 
 if command -v systemctl >/dev/null 2>&1; then
     if systemctl is-enabled --quiet aimilivpn.service; then pass "systemd 已设为开机启动"; else fail "systemd 未启用"; fi

@@ -13,7 +13,7 @@ TRUSTED_LIMIT = int(os.environ.get("TRUSTED_POOL_LIMIT", "10"))
 OBSERVATION_LIMIT = int(os.environ.get("OBSERVATION_POOL_LIMIT", "10"))
 TRUST_MIN_IP_SCORE = int(os.environ.get("TRUST_MIN_IP_SCORE", "90"))
 TRUST_MIN_SUCCESSES = int(os.environ.get("TRUST_MIN_SUCCESSES", "1"))
-HARD_GATE_TTL_SECONDS = int(os.environ.get("HARD_GATE_TTL_SECONDS", "7200"))
+HARD_GATE_TTL_SECONDS = int(os.environ.get("HARD_GATE_TTL_SECONDS", "108000"))
 AUTO_FAVORITE_SCORE = int(os.environ.get("AUTO_FAVORITE_SCORE", "100"))
 
 

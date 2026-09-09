@@ -164,7 +164,7 @@ OPENVPN_AUTH_USER = os.environ.get("OPENVPN_AUTH_USER", "vpn")
 OPENVPN_AUTH_PASS = os.environ.get("OPENVPN_AUTH_PASS", "vpn")
 LOCAL_PROXY_HOST = os.environ.get("LOCAL_PROXY_HOST", "127.0.0.1")
 LOCAL_PROXY_PORT = env_int("LOCAL_PROXY_PORT", 7928, 1, 65535)
-UI_HOST = os.environ.get("UI_HOST", "::")
+UI_HOST = os.environ.get("UI_HOST", "127.0.0.1")
 UI_PORT = env_int("UI_PORT", 8787, 1, 65535)
 INVALID_BACKOFF_SECONDS = env_int("INVALID_BACKOFF_SECONDS", 30 * 60, 1)
 DRAIN_SECONDS = env_int("DRAIN_SECONDS", 60, 1)
@@ -373,6 +373,10 @@ def load_ui_config() -> dict[str, Any]:
                 pass
         if config.get("routing_mode") == "favorites":
             config["routing_mode"] = "auto"
+            updated = True
+
+        if config.get("host") in {"", "::", "0.0.0.0"}:
+            config["host"] = "127.0.0.1"
             updated = True
 
         if not config.get("username"):

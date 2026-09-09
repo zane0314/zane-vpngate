@@ -19,7 +19,7 @@ class FormalInstallProfileTests(unittest.TestCase):
         self.assertEqual("10", values["TRUSTED_POOL_LIMIT"])
         self.assertEqual("10", values["OBSERVATION_POOL_LIMIT"])
         self.assertEqual("1", values["TRUST_MIN_SUCCESSES"])
-        self.assertEqual("7200", values["HARD_GATE_TTL_SECONDS"])
+        self.assertEqual("108000", values["HARD_GATE_TTL_SECONDS"])
         self.assertEqual("10", values["STANDBY_TARGET"])
         self.assertEqual("691200", values["STANDBY_MAX_AGE_SECONDS"])
         self.assertEqual("2", values["STABLE_POOL_PROBE_DAILY_LIMIT"])
@@ -49,7 +49,7 @@ class FormalInstallProfileTests(unittest.TestCase):
         self.assertEqual("8388608", values["UPSTREAM_SNAPSHOT_MAX_BYTES"])
         self.assertEqual("300", values["UPSTREAM_SNAPSHOT_MAX_NODES"])
         self.assertEqual("1", values["TRUST_MIN_SUCCESSES"])
-        self.assertEqual("7200", values["HARD_GATE_TTL_SECONDS"])
+        self.assertEqual("108000", values["HARD_GATE_TTL_SECONDS"])
         self.assertEqual("10", values["UPSTREAM_LOCAL_PROBE_BATCH_SIZE"])
         self.assertEqual("300", values["UPSTREAM_LOCAL_PROBE_INTERVAL_SECONDS"])
         self.assertEqual("25000000", values["UPSTREAM_LOCAL_PROBE_BYTES"])
@@ -123,7 +123,16 @@ class FormalInstallProfileTests(unittest.TestCase):
         text = (ROOT / "scripts" / "verify-formal-install.sh").read_text(encoding="utf-8")
         self.assertIn("check_env UPSTREAM_SNAPSHOT_MAX_AGE_SECONDS 7200", text)
         self.assertIn("check_env TRUST_MIN_SUCCESSES 1", text)
-        self.assertIn("check_env HARD_GATE_TTL_SECONDS 7200", text)
+        self.assertIn("check_env HARD_GATE_TTL_SECONDS 108000", text)
+
+    def test_installer_deploys_native_log_rotation(self):
+        script = (ROOT / "install-zane.sh").read_text(encoding="utf-8")
+        config = (ROOT / "systemd" / "aimilivpn.logrotate").read_text(encoding="utf-8")
+        self.assertIn("/etc/logrotate.d/aimilivpn", script)
+        self.assertIn("/opt/aimilivpn/vpngate_data/vpngate.log", config)
+        self.assertIn("size 10M", config)
+        self.assertIn("rotate 7", config)
+        self.assertIn("copytruncate", config)
 
     def test_installer_has_safe_local_and_git_sources(self):
         script = (ROOT / "install-zane.sh").read_text(encoding="utf-8")
